@@ -8,14 +8,12 @@ class MyBet extends Component {
     loaded_card: undefined,
     deck_id: 'new',
     myPrediction: '',
-    previousCard: undefined,
-    loadedCardValue: -1,
+    loadedCardValue: 0,
+    previousCardValue: 0,
     canShow: false,
   }
 
   componentDidMount() {
-    const self = this;
-    const { deck_id } = this.state;
     this.loadNewCard(false);
   }
 
@@ -23,58 +21,8 @@ class MyBet extends Component {
     const self = this;
     const { deck_id } = this.state;
     load_new_card(deck_id).then(res => {
-      const cardValue = res.data.card[0].map(card => {
-        let number;
-        switch (card.value) {
-          case '1':
-            number = 1;
-            break;
-          case '2':
-            number = 2;
-            break;
-          case '3':
-            number = 3;
-            break;
-          case '4':
-            number = 4;
-            break;
-          case '5':
-            number = 5;
-            break;
-          case '6':
-            number = 6;
-            break;
-          case '7':
-            number = 7;
-            break;
-          case '8':
-            number = 8;
-            break;
-          case '9':
-            number = 9;
-            break;
-          case '10':
-            number = 10;
-            break;
-          case 'JACK':
-            number = 11;
-            break;
-          case 'QUEEN':
-            number = 12;
-            break;
-          case 'KING':
-            number = 13;
-            break;
-          case 'ACE':
-            number = 14;
-            break;
-          default:
-            number = -2;
-            break;
-        }
-        return number;
-      });
-
+      const card = res.data.cards[0];
+      let cardValue = self.makeComparator(card.value);
       self.setState({
         loaded_card: res.data.cards[0], deck_id: res.data.deck_id, canShow: canShow,
         loadedCardValue: cardValue
@@ -82,6 +30,55 @@ class MyBet extends Component {
     }).catch(err => {
       console.log('error with loading cards')
     })
+  }
+
+  makeComparator(value) {
+    let cardValue = -2;
+    switch (value) {
+      case '1':
+        cardValue = 1;
+        break;
+      case '2':
+        cardValue = 2;
+        break;
+      case '3':
+        cardValue = 3;
+        break;
+      case '4':
+        cardValue = 4;
+        break;
+      case '5':
+        cardValue = 5;
+        break;
+      case '6':
+        cardValue = 6;
+        break;
+      case '7':
+        cardValue = 7;
+        break;
+      case '8':
+        cardValue = 8;
+        break;
+      case '9':
+        cardValue = 9;
+        break;
+      case '10':
+        cardValue = 10;
+        break;
+      case 'JACK':
+        cardValue = 11;
+        break;
+      case 'QUEEN':
+        cardValue = 12;
+        break;
+      case 'KING':
+        cardValue = 13;
+        break;
+      case 'ACE':
+        cardValue = 14;
+        break;
+    }
+    return cardValue;
   }
 
   handleClickUp = (event) => {
@@ -95,12 +92,12 @@ class MyBet extends Component {
   }
 
   saveCurrentCard = (myPrediction) => {
-    const { loaded_card } = this.state;
-    this.setState({ previosCard: loaded_card, loaded_card: undefined, myPrediction: myPrediction })
+    const { loadedCardValue } = this.state;
+    this.setState({ previousCardValue: loadedCardValue, loadedCardValue: 0, myPrediction: myPrediction })
   }
 
   render() {
-    const { loaded_card, canShow, previousCard, myPrediction } = this.state;
+    const { loadedCardValue, previousCardValue, loaded_card, canShow, myPrediction } = this.state;
 
     const renderCard = () => {
       if (loaded_card !== undefined && canShow) {
@@ -109,20 +106,16 @@ class MyBet extends Component {
     };
 
     const showResult = () => {
-      console.log('showing result')
-      if (previousCard && loaded_card) {
-        //there can be used case :)
-        if (myPrediction === 'up') {
-          //there must be own comaparator or using map!
-          if (previousCard.value < loaded_card.value) {
-            return <div>You win!</div>;
-          } else return <div>You loose!</div>;
-        } else if (myPrediction === 'down') {
-          //there must be own comaparator or using map!
-          if (previousCard.value > loaded_card.value) {
-            return <div>You win!</div>;
-          } else return <div>You loose!</div>;
+      if (myPrediction === 'up') {
+        if (previousCardValue < loadedCardValue) {
+          return <div>You win!</div>;
         }
+        return <div>You loose!</div>;
+      } else if (myPrediction === 'down') {
+        if (previousCardValue > loadedCardValue) {
+          return <div>You win!</div>;
+        }
+        return <div>You loose!</div>;
       }
     }
 
